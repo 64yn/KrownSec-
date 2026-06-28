@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> //♕|𝐊𝐫𝐨𝐰𝐧𝐒𝐞𝐜// — Discord Bots</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #030307;
+            --surface: rgba(15, 15, 25, 0.65);
+            --surface-hover: rgba(25, 25, 38, 0.85);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(255, 255, 255, 0.2);
+            --text: #eaeaea;
+            --text-muted: #9a9a9a;
+            --text-bright: #ffffff;
+            --online: #2dd4bf;
+            --online-glow: rgba(45, 212, 191, 0.5);
+            --offline: #f87171;
+            --card-radius: 28px;
+            --btn-radius: 40px;
+            --transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.2) transparent; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Preloader */
+        .preloader {
+            position:fixed; inset:0; background:#030307; z-index:9999;
+            display:flex; align-items:center; justify-content:center;
+            transition: opacity 0.6s, visibility 0.6s;
+        }
+        .preloader.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+        .loader-ring {
+            width:50px; height:50px; border:3px solid rgba(255,255,255,0.1);
+            border-top-color:#fff; border-radius:50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* Starfield */
+        #starfield { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+        .nebula { position:fixed; pointer-events:none; z-index:0; border-radius:50%; filter:blur(140px); opacity:0.06; }
+        .nebula-1 { width:800px; height:800px; top:-20%; left:-15%; background:radial-gradient(circle, #fff 0%, #8888cc 35%, transparent 70%); animation:floatA 28s infinite; }
+        .nebula-2 { width:650px; height:650px; bottom:-25%; right:-10%; background:radial-gradient(circle, #ccccee 0%, #6666aa 30%, transparent 70%); animation:floatB 32s infinite; opacity:0.04; }
+        @keyframes floatA { 0%,100% { transform:translate(0,0) scale(1); } 33% { transform:translate(70px,-50px) scale(1.1); } 66% { transform:translate(-40px,40px) scale(0.9); } }
+        @keyframes floatB { 0%,100% { transform:translate(0,0) scale(1); } 33% { transform:translate(-60px,-30px) scale(1.08); } 66% { transform:translate(50px,40px) scale(0.92); } }
+
+        .content { position:relative; z-index:1; }
+
+        /* Navigation */
+        .nav {
+            position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:100;
+            width:calc(100% - 40px); max-width:1100px;
+            background:rgba(10,10,18,0.7); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            border:1px solid var(--border); border-radius:50px; padding:6px 24px;
+            display:flex; align-items:center; justify-content:space-between; transition:var(--transition);
+        }
+        .nav.scrolled { background:rgba(8,8,14,0.85); border-color:var(--border-glow); box-shadow:0 15px 40px rgba(0,0,0,0.7); }
+        .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text-bright); font-weight:700; font-size:1.25rem; }
+        .logo-icon {
+            width:36px; height:36px; border-radius:12px;
+            background:linear-gradient(135deg, #ffffff, #b0b0e0);
+            display:flex; align-items:center; justify-content:center;
+            font-weight:800; color:#0a0a14; box-shadow:0 0 30px rgba(200,200,240,0.5);
+        }
+        .nav-links { display:flex; align-items:center; gap:8px; list-style:none; }
+        .nav-links a { text-decoration:none; color:var(--text-muted); padding:10px 20px; border-radius:30px; font-weight:500; font-size:0.9rem; transition:var(--transition); }
+        .nav-links a:hover { color:#fff; background:rgba(255,255,255,0.06); }
+        .nav-cta { background:rgba(255,255,255,0.08); border:1px solid var(--border); font-weight:600!important; }
+        .nav-cta:hover { border-color:var(--border-glow); background:rgba(255,255,255,0.16)!important; }
+        .menu-toggle { display:none; background:none; border:none; color:#fff; font-size:1.8rem; cursor:pointer; }
+
+        /* Hero */
+        .hero { min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:0 24px; }
+        .hero-content { max-width:750px; }
+        .hero-badge { display:inline-flex; align-items:center; gap:8px; padding:8px 22px; border-radius:30px; background:rgba(255,255,255,0.04); border:1px solid var(--border); font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:28px; }
+        .hero h1 { font-size:clamp(3.2rem, 8vw, 6rem); font-weight:800; color:var(--text-bright); letter-spacing:-2px; line-height:1; margin-bottom:20px; }
+        .hero h1 .accent { background:linear-gradient(to right, #e0e0e0, #ffffff, #c0c0e0); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+        .hero p { font-size:1.15rem; color:var(--text-muted); max-width:550px; margin:0 auto 42px; line-height:1.7; }
+        .hero-actions { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+        .btn {
+            display:inline-flex; align-items:center; gap:8px; padding:16px 32px;
+            border-radius:var(--btn-radius); font-weight:600; font-size:1rem;
+            text-decoration:none; cursor:pointer; border:none; transition:var(--transition);
+            backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+        }
+        .btn-primary { background:#ffffff; color:#0a0a14; box-shadow:0 0 35px rgba(200,200,220,0.4); }
+        .btn-primary:hover { box-shadow:0 0 60px rgba(220,220,240,0.6); transform:translateY(-3px); }
+        .btn-secondary { background:rgba(255,255,255,0.06); color:#fff; border:1px solid var(--border); }
+        .btn-secondary:hover { background:rgba(255,255,255,0.14); border-color:var(--border-glow); transform:translateY(-2px); }
+        .btn-sm { padding:10px 22px; font-size:0.85rem; }
+
+        .section { padding:90px 24px; max-width:1150px; margin:0 auto; }
+        .section-header { text-align:center; margin-bottom:70px; }
+        .section-tag { font-size:0.75rem; text-transform:uppercase; letter-spacing:3px; color:var(--text-muted); margin-bottom:16px; }
+        .section-title { font-size:clamp(2.2rem, 5vw, 3.2rem); font-weight:700; color:#fff; letter-spacing:-1px; margin-bottom:14px; }
+        .section-sub { color:var(--text-muted); font-size:1rem; }
+
+        /* Bot Cards */
+        .bots-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(310px, 1fr)); gap:28px; }
+        .bot-card {
+            background:var(--surface); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            border:1px solid var(--border); border-radius:var(--card-radius); padding:32px 28px;
+            transition: all 0.4s cubic-bezier(0.23,1,0.32,1); position:relative; overflow:hidden;
+            display:flex; flex-direction:column; gap:20px;
+        }
+        .bot-card:hover { transform:translateY(-10px); border-color:var(--border-glow); box-shadow:0 30px 60px rgba(0,0,0,0.8), 0 0 30px rgba(180,180,220,0.15); background:var(--surface-hover); }
+        .bot-card::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at 30% 10%, rgba(255,255,255,0.06) 0%, transparent 60%); pointer-events:none; opacity:0; transition:opacity 0.4s; }
+        .bot-card:hover::after { opacity:1; }
+        .bot-header { display:flex; align-items:center; gap:16px; }
+        .bot-avatar {
+            width:60px; height:60px; border-radius:18px;
+            background:rgba(255,255,255,0.05); border:1px solid var(--border);
+            display:flex; align-items:center; justify-content:center; font-size:2rem;
+            transition:0.3s;
+        }
+        .bot-card:hover .bot-avatar { border-color:var(--border-glow); box-shadow:0 0 30px rgba(200,200,240,0.3); }
+        .bot-info h3 { font-weight:700; font-size:1.3rem; color:#fff; }
+        .bot-tagline { font-size:0.8rem; color:var(--text-muted); margin-top:2px; }
+        .status-badge { display:inline-flex; align-items:center; gap:7px; font-size:0.8rem; font-weight:600; margin-top:6px; }
+        .status-dot { width:10px; height:10px; border-radius:50%; }
+        .status-dot.online { background:var(--online); box-shadow:0 0 14px var(--online-glow); animation:pulse 2s infinite; }
+        .status-dot.offline { background:var(--offline); box-shadow:0 0 10px var(--offline-glow); }
+        @keyframes pulse { 0%,100% { box-shadow:0 0 10px var(--online-glow); } 50% { box-shadow:0 0 28px var(--online-glow); } }
+        .bot-desc { font-size:0.95rem; color:var(--text-muted); line-height:1.6; }
+        .bot-commands { margin-top:4px; }
+        .bot-commands p { font-size:0.8rem; color:#aaa; margin-bottom:10px; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+        .command-list { display:flex; flex-wrap:wrap; gap:8px; }
+        .command-item {
+            background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+            border-radius:14px; padding:6px 14px; font-size:0.8rem; color:#ddd;
+            font-family: 'Fira Code', 'Cascadia Code', monospace;
+            transition:0.2s;
+        }
+        .command-item:hover { background:rgba(255,255,255,0.1); border-color:var(--border-glow); }
+        .bot-tags { display:flex; flex-wrap:wrap; gap:8px; }
+        .tag { font-size:0.7rem; padding:6px 12px; border-radius:20px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:#aaa; }
+        .bot-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:auto; }
+
+        /* Owners */
+        .owners-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:30px; margin-top:40px; }
+        .owner-card {
+            background:var(--surface); backdrop-filter:blur(20px); border:1px solid var(--border);
+            border-radius:var(--card-radius); padding:36px 24px; text-align:center; transition:var(--transition);
+        }
+        .owner-card:hover { border-color:var(--border-glow); transform:translateY(-6px); box-shadow:0 25px 50px rgba(0,0,0,0.6); }
+        .owner-avatar {
+            width:90px; height:90px; border-radius:50%; margin:0 auto 18px;
+            background:linear-gradient(135deg, #fff, #9999cc);
+            display:flex; align-items:center; justify-content:center;
+            font-size:2.2rem; font-weight:700; color:#0a0a14;
+            box-shadow:0 0 35px rgba(200,200,240,0.35);
+        }
+        .owner-name { font-weight:700; font-size:1.3rem; color:#fff; }
+        .owner-role { font-size:0.85rem; color:var(--text-muted); margin-top:6px; }
+
+        /* Server */
+        .server-card {
+            background:var(--surface); backdrop-filter:blur(20px); border:1px solid var(--border);
+            border-radius:var(--card-radius); padding:52px 36px; text-align:center;
+            max-width:620px; margin:0 auto; transition:var(--transition);
+        }
+        .server-card:hover { border-color:var(--border-glow); box-shadow:0 0 60px rgba(150,150,200,0.12); }
+        .server-icon { font-size:3.8rem; margin-bottom:18px; }
+        .server-card h3 { font-size:1.8rem; color:#fff; margin-bottom:12px; }
+
+        .footer { text-align:center; padding:40px 24px; color:#666; font-size:0.8rem; border-top:1px solid rgba(255,255,255,0.04); max-width:1100px; margin:0 auto; }
+
+        .toast {
+            position:fixed; bottom:35px; left:50%; transform:translateX(-50%) translateY(120px);
+            background:rgba(20,20,30,0.95); backdrop-filter:blur(25px);
+            border:1px solid var(--border-glow); color:#fff; padding:14px 32px;
+            border-radius:40px; font-weight:500; font-size:0.9rem; z-index:999;
+            transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none;
+        }
+        .toast.show { transform:translateX(-50%) translateY(0); }
+
+        @media (max-width:768px) {
+            .nav { width:calc(100% - 20px); padding:6px 20px; }
+            .nav-links {
+                position:fixed; top:80px; right:10px;
+                background:rgba(10,10,18,0.95); backdrop-filter:blur(25px);
+                border:1px solid var(--border); border-radius:24px;
+                flex-direction:column; padding:24px; gap:10px;
+                display:none; box-shadow:0 25px 50px rgba(0,0,0,0.7);
+            }
+            .nav-links.active { display:flex; }
+            .menu-toggle { display:block; }
+            .hero h1 { font-size:2.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="preloader" id="preloader"><div class="loader-ring"></div></div>
+    <canvas id="starfield" aria-hidden="true"></canvas>
+    <div class="nebula nebula-1"></div>
+    <div class="nebula nebula-2"></div>
+
+    <div class="content">
+        <nav class="nav" id="navbar">
+            <a href="#" class="nav-brand"><div class="logo-icon">♕</div>𝐊𝐫𝐨𝐰𝐧𝐒𝐞𝐜</a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#bots">🤖 Bots</a></li>
+                <li><a href="#owners">👥 Owners</a></li>
+                <li><a href="#server">💬 Server</a></li>
+                <li><a href="#bots" class="nav-cta">+ Add Bot</a></li>
+            </ul>
+        </nav>
+
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">✨ Discord Bot Collective</div>
+                <h1>♕|𝐊𝐫𝐨𝐰𝐧 <span class="accent">𝐒𝐞𝐜</span></h1>
+                <p>Next‑gen Discord bots with powerful commands.<br>Raid or nuke – the choice is yours. All bots are online.</p>
+                <div class="hero-actions">
+                    <a href="#bots" class="btn btn-primary">⚡ Explore Bots</a>
+                    <a href="https://discord.gg/JyQypJnaQ" target="_blank" class="btn btn-secondary">💬 Join Server</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="bots">
+            <div class="section-header">
+                <p class="section-tag">Our Fleet</p>
+                <h2 class="section-title">Choose Your Weapon</h2>
+                <p class="section-sub">Real bots. Real power. Click to see how they work.</p>
+            </div>
+            <div class="bots-grid">
+                <!-- R4id Bot -->
+                <div class="bot-card">
+                    <div class="bot-header">
+                        <div class="bot-avatar">⚔️</div>
+                        <div class="bot-info">
+                            <h3>R4id Bot</h3>
+                            <p class="bot-tagline">Server Raider</p>
+                            <div class="status-badge">
+                                <span class="status-dot online"></span>
+                                <span style="color:#5ee9d0;">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="bot-desc">R4iding any type of servers. Rape any server for free. </p>
+                    <div class="bot-commands">
+                        <p>⚡ Slash Commands (/):</p>
+                        <div class="command-list">
+                            <span class="command-item">/raid</span>
+                            <span class="command-item">/raid banall</span>
+                            <span class="command-item">/raid spam</span>
+                            <span class="command-item">/raid channels</span>
+                        </div>
+                    </div>
+                    <div class="bot-tags">
+                        <span class="tag">Raid</span>
+                        <span class="tag">Slash Cmds</span>
+                        <span class="tag">Fast</span>
+                    </div>
+                    <div class="bot-actions">
+                        <a href="https://discord.com/oauth2/authorize?client_id=1518889315898359848" target="_blank" class="btn btn-primary btn-sm">➕ Invite R4id</a>
+                    </div>
+                </div>
+
+                <!-- N3ke Bot -->
+                <div class="bot-card">
+                    <div class="bot-header">
+                        <div class="bot-avatar">💣</div>
+                        <div class="bot-info">
+                            <h3>N3ke Bot</h3>
+                            <p class="bot-tagline">Server Nuker</p>
+                            <div class="status-badge">
+                                <span class="status-dot online"></span>
+                                <span style="color:#5ee9d0;">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="bot-desc">N3king any type of server. Wipe everything with a single command.</p>
+                    <div class="bot-commands">
+                        <p>💥 Prefix Commands ($):</p>
+                        <div class="command-list">
+                            <span class="command-item">$nuke</span>
+                            <span class="command-item">$nuke banall</span>
+                            <span class="command-item">$nuke roles</span>
+                            <span class="command-item">.nuke all</span>
+                        </div>
+                    </div>
+                    <div class="bot-tags">
+                        <span class="tag">Nuke</span>
+                        <span class="tag">Prefix Cmd</span>
+                        <span class="tag">Wipe</span>
+                    </div>
+                    <div class="bot-actions">
+                        <a href="https://discord.com/oauth2/authorize?client_id=1520259140151414794" target="_blank" class="btn btn-primary btn-sm">➕ Invite N3ke</a>
+                    </div>
+                </div>
+
+                <!-- Coming Soon -->
+                <div class="bot-card" style="opacity:0.7; border-style: dashed;">
+                    <div class="bot-header">
+                        <div class="bot-avatar" style="background:rgba(255,255,255,0.02);">🌌</div>
+                        <div class="bot-info">
+                            <h3>More Coming Soon</h3>
+                            <p class="bot-tagline">Cooking in the lab</p>
+                            <div class="status-badge">
+                                <span class="status-dot offline" style="background:#aaa; box-shadow:none;"></span>
+                                <span style="color:#aaa;">In Development</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="bot-desc">New bots are on the horizon. Join our server to stay updated.</p>
+                    <div class="bot-actions">
+                        <a href="https://discord.gg/RW9B75GTT" target="_blank" class="btn btn-secondary btn-sm">🔔 Get Updates</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="owners">
+            <div class="section-header">
+                <p class="section-tag">Team</p>
+                <h2 class="section-title">Meet the Owners</h2>
+                <p class="section-sub">The visionaries behind KrownSec.</p>
+            </div>
+            <div class="owners-grid">
+                <div class="owner-card">
+                    <div class="owner-avatar">S</div>
+                    <div class="owner-name">Debator</div>
+                    <div class="owner-role">Owner & Founder</div>
+                </div>
+                <div class="owner-card">
+                    <div class="owner-avatar">D</div>
+                    <div class="owner-name">Debator/fanto</div>
+                    <div class="owner-role">Co‑Owner & Developer</div>
+                </div>
+                <div class="owner-card">
+                    <div class="owner-avatar">S</div>
+                    <div class="owner-name">Soul(64yn)</div>
+                    <div class="owner-role">Co‑Owner & Designer</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="server">
+            <div class="section-header">
+                <p class="section-tag">Community</p>
+                <h2 class="section-title">Join Our Discord</h2>
+                <p class="section-sub">Support, updates,and chats. </p>
+            </div>
+            <div class="server-card">
+                <div class="server-icon">💬✨</div>
+                <h3>// ♕|𝐊𝐫𝐨𝐰𝐧𝐒𝐞𝐜// community</h3>
+                <p style="color:#aaa; margin-bottom:28px;">Get help, share ideas, and stay updated with our latest bots.</p>
+                <a href="" target="_blank" class="btn btn-primary">🚀 Join Server</a>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>© 2026 <strong>// ♕|𝐊𝐫𝐨𝐰𝐧𝐒𝐞𝐜 \\</strong> — All rights reserved. Crafted among the stars.</p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        (function() {
+            window.addEventListener('load', () => document.getElementById('preloader').classList.add('hidden'));
+
+            const canvas = document.getElementById('starfield');
+            const ctx = canvas.getContext('2d');
+            let stars = [], shootingStars = [], w, h;
+            const STAR_COUNT = 280;
+            function resize() { w=canvas.width=window.innerWidth; h=canvas.height=window.innerHeight; initStars(); }
+            function initStars() {
+                stars = [];
+                for(let i=0;i<STAR_COUNT;i++) stars.push({
+                    x:Math.random()*w, y:Math.random()*h,
+                    r:Math.random()*2.2+0.5, base:Math.random()*0.7+0.3,
+                    speed:Math.random()*0.02+0.005, offset:Math.random()*Math.PI*2
+                });
+            }
+            function spawnShooting() {
+                if(shootingStars.length>2) return;
+                const x=Math.random()*w*0.8, y=Math.random()*h*0.5, angle=Math.random()*0.8+0.3, sp=Math.random()*10+8;
+                shootingStars.push({x,y,vx:Math.cos(angle)*sp,vy:Math.sin(angle)*sp,life:1,decay:Math.random()*0.018+0.018,len:Math.random()*110+50,angle});
+            }
+            function draw(ts) {
+                ctx.clearRect(0,0,w,h);
+                for(const s of stars) {
+                    const alpha = s.base + Math.sin(ts*s.speed + s.offset)*0.3;
+                    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+                    ctx.fillStyle = `rgba(255,255,255,${Math.max(0.2,alpha)})`; ctx.fill();
+                }
+                for(let i=shootingStars.length-1;i>=0;i--) {
+                    const ss = shootingStars[i];
+                    const tx = ss.x - Math.cos(ss.angle)*ss.len*ss.life, ty = ss.y - Math.sin(ss.angle)*ss.len*ss.life;
+                    const grad = ctx.createLinearGradient(ss.x,ss.y,tx,ty);
+                    grad.addColorStop(0,`rgba(255,255,255,${ss.life})`); grad.addColorStop(1,'rgba(255,255,255,0)');
+                    ctx.beginPath(); ctx.moveTo(ss.x,ss.y); ctx.lineTo(tx,ty);
+                    ctx.strokeStyle=grad; ctx.lineWidth=1.8; ctx.stroke();
+                    ss.x+=ss.vx; ss.y+=ss.vy; ss.life-=ss.decay;
+                    if(ss.life<=0) shootingStars.splice(i,1);
+                }
+                requestAnimationFrame(draw);
+            }
+            resize(); window.addEventListener('resize', resize);
+            requestAnimationFrame(draw);
+            setInterval(()=>{ if(Math.random()<0.45) spawnShooting(); }, 2800);
+
+            const nav = document.getElementById('navbar');
+            window.addEventListener('scroll', ()=> nav.classList.toggle('scrolled', window.scrollY>30));
+            const menuToggle = document.getElementById('menuToggle'), navLinks = document.getElementById('navLinks');
+            menuToggle.addEventListener('click', ()=> navLinks.classList.toggle('active'));
+            document.querySelectorAll('#navLinks a').forEach(l=> l.addEventListener('click', ()=> navLinks.classList.remove('active')));
+
+            const toast = document.getElementById('toast'); let toastTimer;
+            function showToast(msg) {
+                clearTimeout(toastTimer); toast.textContent=msg; toast.classList.add('show');
+                toastTimer=setTimeout(()=> toast.classList.remove('show'), 2500);
+            }
+            document.querySelectorAll('.bot-card').forEach(card => {
+                card.addEventListener('click', e => {
+                    if(e.target.closest('a')) return;
+                    const name = card.querySelector('h3')?.textContent || 'Bot';
+                    const status = card.querySelector('.status-badge span:last-child')?.textContent || 'Unknown';
+                    showToast(`${name} · ${status}`);
+                });
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(a => {
+                a.addEventListener('click', function(e) {
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if(target) { e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
+```
